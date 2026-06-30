@@ -671,7 +671,26 @@ function CreateAMolecule(props: AppProps) {
       })
       .filter((svg): svg is string => svg !== null);
 
+  const situation = () => {
+    const atoms = placedAtoms();
+    const selectedElement = $activeElement();
+    if (atoms.length === 0) {
+      return `The molecule builder is empty. ${selectedElement.name} (${selectedElement.symbol}) is selected as the next atom to place, and the active connection tool is ${$activeConnectionTool()}.`;
+    }
+
+    const atomSummary = atoms.map((atom) => `${atom.name} (${atom.symbol}) at row ${atom.row}, column ${atom.col}`).join("; ");
+    const bonds = annotatedConnections().filter((connection) => connection.bondOrder > 0);
+    const bondSummary = bonds.length
+      ? `${bonds.length} bond(s) are drawn: ${bonds.map((bond) => `${bond.key} with order ${bond.bondOrder}`).join("; ")}.`
+      : "No bonds are drawn yet.";
+    const formula = isRealisticMolecule() ? sumFormula() : "not yet a realistic molecule";
+    const structure = isRealisticMolecule() && structuralFormula() ? ` The structural formula is ${structuralFormula()}.` : "";
+
+    return `The molecule builder contains ${atoms.length} atom(s) with formula ${formula}: ${atomSummary}. ${bondSummary}${structure} ${selectedElement.name} (${selectedElement.symbol}) is selected for the next placement.`;
+  };
+
   const currentInfo = (): MoleculeAppletInfoType => ({
+    situation: situation(),
     selectedElement: {
       atomicNumber: $activeElement().number,
       symbol: $activeElement().symbol,

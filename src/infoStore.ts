@@ -22,6 +22,7 @@ export interface MoleculeConnectionInfo {
 }
 
 export interface MoleculeAppletInfoType {
+  situation: string;
   selectedElement: {
     atomicNumber: number;
     symbol: string;
@@ -37,6 +38,7 @@ export interface MoleculeAppletInfoType {
 }
 
 export const [infoStore, setInfoStore] = createStore<MoleculeAppletInfoType>({
+  situation: "No molecule has been built yet; carbon is selected as the next atom.",
   selectedElement: {
     atomicNumber: 6,
     symbol: "C",
