@@ -1,0 +1,31 @@
+@import 'tailwindcss';
+
+@source "./**/*.{js,jsx,ts,tsx,html}";
+
+@theme {
+  --color-aidu-page: #f7f9f8;
+  --color-aidu-surface: #ffffff;
+  --color-aidu-stage: #eef2f1;
+  --color-aidu-panel: #dbe7e4;
+  --color-aidu-panel-strong: #c9d8d4;
+  --color-aidu-text: #17201e;
+  --color-aidu-muted: #60716d;
+  --color-aidu-line: #9ab1ab;
+  --color-aidu-line-soft: #c8d8d4;
+  --color-aidu-primary: #0f766e;
+  --color-aidu-primary-strong: #115e59;
+  --color-aidu-primary-soft: #56b6c2;
+  --color-aidu-accent: #b45309;
+  --color-aidu-accent-soft: #e5c07b;
+  --color-aidu-warning: #fef3c7;
+  --color-aidu-warning-text: #78350f;
+  --color-aidu-error: #b3261e;
+  --color-aidu-success: #166534;
+}
+
+.chemfig-rendered svg {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: 216px;
+}
