@@ -245,7 +245,7 @@ const elementFormulaPriority = [
   "Ar",
 ];
 
-function MoleculeCreator(props: AppProps) {
+function CreateAMolecule(props: AppProps) {
   const submitDelayMs = props.submitDelayMs ?? 5000;
   const [$activeAtom, setActiveAtom] = createSignal<number>(6);
   const [$selectedPoint, setSelectedPoint] = createSignal<GridPoint | null>(null);
@@ -503,8 +503,9 @@ function MoleculeCreator(props: AppProps) {
       const markedElectrons = markedElectronCountByAtom.get(key) ?? 0;
       const chargeOffset = chargeOffsetByAtom.get(key) ?? 0;
       const expectedValenceElectrons = element.valence + chargeOffset;
+      const remainingElectrons = expectedValenceElectrons - bondOrder - markedElectrons;
 
-      return expectedValenceElectrons >= 0 && bondOrder + markedElectrons === expectedValenceElectrons;
+      return expectedValenceElectrons >= 0 && remainingElectrons >= 0 && remainingElectrons % 2 === 0;
     });
   };
 
@@ -531,7 +532,7 @@ function MoleculeCreator(props: AppProps) {
 
     const atomChemfig = (atom: GridAtom) => {
       const key = atomKey(atom.row, atom.col);
-      const charges = connectionStore
+      const explicitCharges = connectionStore
         .flatMap((connection) => {
           const marks: { end: ConnectionEnd; mark: ConnectionMark }[] = [
             { end: "from", mark: connection.fromMark },
@@ -549,6 +550,56 @@ function MoleculeCreator(props: AppProps) {
             });
         })
         .filter(Boolean);
+      const bondOrder = connectedBonds.reduce((total, connection) => {
+        const fromKey = atomKey(connection.from.row, connection.from.col);
+        const toKey = atomKey(connection.to.row, connection.to.col);
+        return fromKey === key || toKey === key ? total + connection.bondOrder : total;
+      }, 0);
+      const markedElectrons = connectionStore.reduce((total, connection) => {
+        const endpointMarks: { point: GridPoint; mark: ConnectionMark }[] = [
+          { point: connection.from, mark: connection.fromMark },
+          { point: connection.to, mark: connection.toMark },
+        ];
+
+        return (
+          total +
+          endpointMarks.reduce(
+            (endpointTotal, { point, mark }) =>
+              atomKey(point.row, point.col) === key ? endpointTotal + markElectronCount(mark) : endpointTotal,
+            0,
+          )
+        );
+      }, 0);
+      const chargeOffset = connectionStore.reduce((total, connection) => {
+        const endpointMarks: { point: GridPoint; mark: ConnectionMark }[] = [
+          { point: connection.from, mark: connection.fromMark },
+          { point: connection.to, mark: connection.toMark },
+        ];
+
+        return (
+          total +
+          endpointMarks.reduce(
+            (endpointTotal, { point, mark }) =>
+              atomKey(point.row, point.col) === key ? endpointTotal + markChargeOffset(mark) : endpointTotal,
+            0,
+          )
+        );
+      }, 0);
+      const inferredPairCount = Math.max(0, (elementByNumber[atom.atomicNumber].valence + chargeOffset - bondOrder - markedElectrons) / 2);
+      const usedAngles = new Set(
+        connectedBonds
+          .filter((connection) => {
+            const fromKey = atomKey(connection.from.row, connection.from.col);
+            const toKey = atomKey(connection.to.row, connection.to.col);
+            return fromKey === key || toKey === key;
+          })
+          .map((connection) => Math.round(connectionAngle(connection, key))),
+      );
+      const inferredCharges = [90, 0, 270, 180, 45, 315, 135, 225]
+        .filter((angle) => !usedAngles.has(angle))
+        .slice(0, inferredPairCount)
+        .map((angle) => `${angle}=\\|`);
+      const charges = [...explicitCharges, ...inferredCharges];
 
       return charges.length > 0 ? `\\charge{${charges.join(",")}}{${atom.symbol}}` : atom.symbol;
     };
@@ -1156,4 +1207,4 @@ function MoleculeCreator(props: AppProps) {
   );
 }
 
-export default MoleculeCreator;
+export default CreateAMolecule;

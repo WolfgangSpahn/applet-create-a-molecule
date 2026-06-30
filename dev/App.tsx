@@ -1,4 +1,4 @@
-import MoleculeCreator from '@src/PeriodicTable';
+import CreateAMolecule from '@src/CreateAMolecule';
 import './index.css';
 
 export default function App() {
@@ -10,7 +10,7 @@ export default function App() {
         </h1>
 
         <div class="bg-white shadow p-4">
-          <MoleculeCreator />
+          <CreateAMolecule />
         </div>
       </div>
     </div>
